@@ -34,8 +34,7 @@ export default function Dashboard() {
     !approvalRecords.some(r =>
       r.contractId === c.id &&
       r.approverId === currentUser.id &&
-      r.nodeId === c.currentNodeId &&
-      r.action === 'approve'
+      r.nodeId === c.currentNodeId
     )
   )
 
@@ -58,7 +57,7 @@ export default function Dashboard() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 8)
 
-  const fmt = (n: number) => n >= 10000 ? `${(n / 10000).toFixed(1)}万` : n.toLocaleString()
+  const fmt = (n: number) => n >= 10000 ? `${(n / 10000).toFixed(1)}万` : `¥${n.toLocaleString()}`
 
   return (
     <div className="space-y-6">
@@ -80,19 +79,23 @@ export default function Dashboard() {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-serif font-bold text-navy-900">最近合同</h2>
-            <Link to="/contracts" className="text-sm text-gold-500 flex items-center gap-1 hover:text-gold-400">
+            <Link to="/workspace" className="text-sm text-gold-500 flex items-center gap-1 hover:text-gold-400">
               查看全部 <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           <div className="space-y-1">
             {recentContracts.map(c => (
-              <Link key={c.id} to={`/contracts/${c.id}`} className="flex items-center justify-between py-2.5 px-2 -mx-2 rounded hover:bg-surface-alt">
+              <Link
+                key={c.id}
+                to={`/approval/${c.id}`}
+                className="flex items-center justify-between py-2.5 px-2 -mx-2 rounded hover:bg-surface-alt transition-colors"
+              >
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-navy-800 truncate">{c.title}</div>
                   <div className="text-xs text-navy-400 mt-0.5">{c.department} · {c.currentNodeName}</div>
                 </div>
                 <div className="flex items-center gap-3 ml-3 shrink-0">
-                  <span className="text-sm text-navy-600">{fmt(c.amount)}</span>
+                  <span className="text-sm text-navy-600 font-medium">{fmt(c.amount)}</span>
                   <StatusBadge status={c.status} />
                 </div>
               </Link>
@@ -103,19 +106,28 @@ export default function Dashboard() {
         <div className="card p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-serif font-bold text-navy-900">待办事项</h2>
-            <Bell className="w-5 h-5 text-gold-500" />
+            <div className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-gold-500" />
+              {pendingContracts.length > 0 && (
+                <span className="text-xs bg-red-500 text-white rounded-full px-1.5 py-0.5">{pendingContracts.length}</span>
+              )}
+            </div>
           </div>
           {pendingContracts.length === 0 ? (
             <div className="text-sm text-navy-400 text-center py-8">暂无待办事项</div>
           ) : (
             <div className="space-y-1">
               {pendingContracts.map(c => (
-                <Link key={c.id} to={`/contracts/${c.id}`} className="flex items-center justify-between py-2.5 px-2 -mx-2 rounded hover:bg-surface-alt">
+                <Link
+                  key={c.id}
+                  to={`/approval/${c.id}`}
+                  className="flex items-center justify-between py-2.5 px-2 -mx-2 rounded hover:bg-surface-alt transition-colors"
+                >
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-navy-800 truncate">{c.title}</div>
                     <div className="text-xs text-navy-400 mt-0.5">{c.initiatorName} · {c.currentNodeName}</div>
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-gold-50 text-gold-500 ml-3 shrink-0">待处理</span>
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-gold-50 text-gold-500 ml-3 shrink-0 font-medium">待处理</span>
                 </Link>
               ))}
             </div>
@@ -143,8 +155,8 @@ export default function Dashboard() {
                     <span className="text-navy-400 mx-1">在【{r.nodeName}】</span>
                     <span className={act.cls}>{act.text}</span>
                   </div>
-                  {r.opinion && <div className="text-xs text-navy-400 mt-1 truncate">{r.opinion}</div>}
-                  <div className="text-xs text-navy-300 mt-1">{r.createdAt}</div>
+                  {r.opinion && <div className="text-xs text-navy-500 mt-1">{r.opinion}</div>}
+                  <div className="text-xs text-navy-300 mt-1">{new Date(r.createdAt).toLocaleString('zh-CN')}</div>
                 </div>
               </div>
             )
